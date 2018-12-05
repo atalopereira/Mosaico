@@ -49,7 +49,6 @@ float angulo_gradiente(int gy, int gx, Imagem imagem);
 
 void posicao_aleatoria(int tamanhoI, int tamanhoJ, int *novoI, int *novoJ);
 
-
 void ativaWidgets();
 
 #endif

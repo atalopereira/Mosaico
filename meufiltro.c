@@ -45,6 +45,7 @@ void inicializarWidgetsMeuFiltro() {
 	g_signal_connect(G_OBJECT(widgetRadioGradiente), "toggled", G_CALLBACK(funcaoAplicar), NULL);
 	g_signal_connect(G_OBJECT(widgetCor), "color-set", G_CALLBACK(funcaoAplicar), NULL);
 
+	//Chama a funcão de habilitar/desabilitar os Widgets. 
 	g_signal_connect(G_OBJECT(widgetOnOffRotacao), "state-set", G_CALLBACK(ativaWidgets), NULL);
 	g_signal_connect(G_OBJECT(widgetRadioAleatorio), "toggled", G_CALLBACK(ativaWidgets), NULL);
 	g_signal_connect(G_OBJECT(widgetRadioGradiente), "toggled", G_CALLBACK(ativaWidgets), NULL);
@@ -52,6 +53,7 @@ void inicializarWidgetsMeuFiltro() {
 
 void adicionarWidgetsMeuFiltro(GtkWidget *container) {
 
+	//Dbox para widgets do lado direito; Ebox para os do lado esquerdo; e vbox recebe os Dbox e Ebox.
 	GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 15); 
 	GtkWidget *Dbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	GtkWidget *Ebox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -64,7 +66,7 @@ void adicionarWidgetsMeuFiltro(GtkWidget *container) {
 	gtk_container_add(GTK_CONTAINER(vbox), Dbox);
 	gtk_container_add(GTK_CONTAINER(container), vbox);
 	
-	//Deixa alinhado igualmente e horizontalmente o Dbox e Ebox
+	//Deixa alinhado igualmente e horizontalmente o Dbox (também na vertical) e Ebox
 	gtk_box_set_homogeneous(GTK_BOX(vbox), TRUE); 
 	gtk_box_set_homogeneous(GTK_BOX(Dbox), TRUE); 
 
@@ -111,7 +113,7 @@ void adicionarWidgetsMeuFiltro(GtkWidget *container) {
 	
 	//======================================================
 
-	//Inicia as opções Gradiente, aleatória e Fixo desativados
+	//Inicia desativado as opções do ângulo do ladrilho, Gradiente, aleatória e Fixo
 	gtk_widget_set_sensitive(widgetRadioGradiente, FALSE);
 	gtk_widget_set_sensitive(widgetRadioAleatorio, FALSE);
 	gtk_widget_set_sensitive(widgetRadioFixo, FALSE);	
@@ -121,12 +123,12 @@ void adicionarWidgetsMeuFiltro(GtkWidget *container) {
 Imagem meuFiltro(Imagem origem) {
 	
 	//================ Variáveis ===================
-	int i, j;
+	int i, j; // Usadas para posição em relação as matrizes das imagens.
 	Imagem destino = alocarImagem(origem);
 	int tamLadri = (int) gtk_range_get_value(GTK_RANGE(widgetTamanhoLadrilho)); //tamanho do ladrilho
 
 	//Canais de cores
-	int ch1=0, ch2=1, ch3=2;
+	int ch1 = 0, ch2 = 1, ch3 = 2;
 	
 	//rot armazena o estado do botão da orientação do ladrilho
 	int rot = gtk_switch_get_active(GTK_SWITCH(widgetOnOffRotacao));
@@ -139,9 +141,9 @@ Imagem meuFiltro(Imagem origem) {
 	GdkRGBA rgba;
 	gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widgetCor), &rgba);
 
-	int y = 0, x = 0;
+	int y = 0, x = 0;	// Usadas para posição em relação as matrizes das imagens.
 
-	//Armazena o pixel do centro do ladrilho
+	//Armazena a cor do pixel do centro do ladrilho
 	int corCh1 = 0, corCh2 = 0, corCh3 = 0;
 
 	int min_i, max_i, min_j, max_j; // Variaveis que guardam a dimensão ocupada pelo ladrilho rotacionando.
@@ -149,10 +151,10 @@ Imagem meuFiltro(Imagem origem) {
 	//Armazena o valor selecionado para o tamanho da borda
 	int borda = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgetTamanhoBorda));
 
-	//Contador da posição aleatória
+	//Contador usado na posição aleatória
 	int cont = 0;
 
-	//Ajustar nivel no inicio da barra "tamnho do ladrilho". Ex: (na barra)0=2(no sistema), 1=3
+	//Ajustar nivel no inicio da barra "tamanho do ladrilho". Ex: (na barra)0=2(no sistema), 1=3
 	tamLadri+=2;
 	
 	//Semente para um valor aleatório
@@ -215,12 +217,12 @@ Imagem meuFiltro(Imagem origem) {
 
 			/*Condição para saber se o botão de rotação está ativado 
 			  Caso rotacionado, definir as novas dimensões do ladrilho. (resolve o problema do ladrilho redondo)*/
-                	if(rot){
+            		if(rot){
 
 				//Função para rotacionar ladrilho
 				rot_ladrilho(i, j, i, j+tamLadri-1, i+tamLadri-1, j+tamLadri-1, i+tamLadri-1, j, polyX, polyY, i+tamLadri/2, j+tamLadri/2, angulo);
 
-				//
+				//Definir as novas dimensões do ladrilho. (resolve o problema do ladrilho redondo)
 				min_max(polyX, polyY, &min_i, &max_i, &min_j, &max_j);
 
 				for(y = min_i; y < max_i; y++) {
@@ -236,11 +238,10 @@ Imagem meuFiltro(Imagem origem) {
 					}
 				}
 
-                	}else{
+            		}else{
 				//Caso não rotacionado, pinta os pixels normalmente
 				for(y = i; y < i+tamLadri; y++) {
 					for(x = j; x < j+tamLadri; x++) {
-
 						if(y < destino.h && x < destino.w){
 							destino.m[y][x][0] = corCh1;
 							destino.m[y][x][1] = corCh2;
@@ -256,12 +257,12 @@ Imagem meuFiltro(Imagem origem) {
 }
 
 //===================================== Funções ==================================================
-
+// Faz a rotação de um ponto do vértice do ladrilho em relação ao ângulo.
 void rotacaoPonto(int *Vx, int *Vy, float Cx, float Cy, float t){ // t = teta
 	
 	float Ax, Ay; //Variaveis auxiliares;
 
-	float sent = sin(t), cost = cos(t);
+	float sent = sin(t), cost = cos(t); //Calculo os seno e cosseno do ângulo.
 
 	//Armazena os valores dos vértices
 	float Bx = *Vx, By = *Vy;
@@ -307,7 +308,9 @@ int pointInPolygon(int polyCorners, int x, int y) {
 
 //================================================================================================
 
-//Função para rotacionar todos os pontos dos vértices do ladrilho
+/*Função para rotacionar todos os pontos dos vértices do ladrilho. Recebe os quatro pontos, 
+os vetores usados na função que verifica se o ponto está dentro, e ângulo de rotação. 
+Chama a função que rotacionada um ponto, para cada vertice passado.*/
 void rot_ladrilho(int P1x, int P1y, int P2x, int P2y, int P3x, int P3y, int P4x, int P4y, float *polyX_1, float *polyY_1, int PCx, int PCy, float ang){
 	rotacaoPonto(&P1x, &P1y, PCx, PCy, ang);
 	polyX_1[0] = P1x;
@@ -330,11 +333,13 @@ void rot_ladrilho(int P1x, int P1y, int P2x, int P2y, int P3x, int P3y, int P4x,
 
 //Função para pegar os valores maximos e minimos do ladrilho rotacionando.
 void min_max(float *polyX_2, float *polyY_2, int *min_i, int *max_i, int *min_j, int *max_j){
+	//Inicia os valores das variáveis
 	*min_i = (int) polyX[0];
 	*max_i = (int) polyX[0];
 	*min_j = (int) polyX[0];
 	*max_j = (int) polyX[0];
 
+	//Percorre o vetor e verifica os máximos e mínimos dos pontos
 	for( int k = 0; k < 4; k++){
 		if(polyX[k] < *min_i)
 			*min_i = (int) polyX[k];
@@ -348,15 +353,20 @@ void min_max(float *polyX_2, float *polyY_2, int *min_i, int *max_i, int *min_j,
 }
 
 //================================================================================================
-
+//Calculo o ângulo do vetor gradiente da região central do ladrilho.
 float angulo_gradiente(int gy, int gx, Imagem imagem){
 
 	//gx e gy = centro do ladrilho
 	
-	int filtrox[3][3] = {-1,0,1,-2,0,2,-1,0,1};
-	int filtroy[3][3] = {-1,-2,-1,0, 0,0,1,2,1};
+	int filtrox[3][3] = {-1,0,1,-2,0,2,-1,0,1}; //Filtro de Sobel
+	int filtroy[3][3] = {-1,-2,-1,0, 0,0,1,2,1}; //Filtro de Sobel
+
+	//int filtrox[3][3] = {-1,0,1,-1,0,1,-1,0,1}; //Filtro de Prewitt
+	//int filtroy[3][3] = {-1,-1,-1,0, 0,0,1,1,1}; //Filtro de Prewitt
+
+
 	//Gradiente x e y
-	float dx=0, dy=0;
+	float dx = 0, dy = 0;
 	
 	//Desloca o valor que era do centro, para um pixel acima. Passando a ser o canto superior esquerdo do ladrilho
 	gy--;
@@ -365,6 +375,7 @@ float angulo_gradiente(int gy, int gx, Imagem imagem){
 	for(int i=0; i<3; i++){
 		for(int j=0; j<3; j++){
 
+			//Aplica o cálculo do filtro
 			if(((gy+i) >= 0) && ((gx+j) >= 0) && ((gy+i) < imagem.h) && ((gx+j) < imagem.w) ){
 				dy += filtroy[i][j] * imagem.m[gy+i][gx+j][0];
 				dx += filtrox[i][j] * imagem.m[gy+i][gx+j][0];
@@ -388,6 +399,8 @@ void posicao_aleatoria(int tamanhoI, int tamanhoJ, int *novoI, int *novoJ){
 
 //Ativa ou desativa os widgets quando necessário!
 void ativaWidgets(){
+
+	//Verifica se o botão de rotação está ativado
 	if(gtk_switch_get_active(GTK_SWITCH(widgetOnOffRotacao))){
 		gtk_widget_set_sensitive(widgetRadioGradiente, TRUE);
 		gtk_widget_set_sensitive(widgetRadioAleatorio, TRUE);
@@ -400,6 +413,7 @@ void ativaWidgets(){
 		gtk_widget_set_sensitive(widgetAnguloLadrilho, FALSE);
 	}
 
+	//Verifica se o botão de rotação está ativado e o radio button aleatório ou o radio button gradiente está ativado
 	if(gtk_switch_get_active(GTK_SWITCH(widgetOnOffRotacao)) && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widgetRadioAleatorio))	||	gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widgetRadioGradiente)))){
 		gtk_widget_set_sensitive(widgetAnguloLadrilho, FALSE);
 	} else if(gtk_switch_get_active(GTK_SWITCH(widgetOnOffRotacao)) && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widgetRadioFixo))) {
